@@ -8,10 +8,11 @@ namespace RPG.Dialogue.Editor
 {
     public class DialogueEditor : EditorWindow
     {
-        private Dialogue selectedDialogue = null;
-        private GUIStyle nodeStyle;
-        private DialogueNode draggingNode = null;
-        private Vector2 draggingOffset;
+        [NonSerialized] private Dialogue selectedDialogue = null;
+        [NonSerialized] private GUIStyle nodeStyle;
+        [NonSerialized] private DialogueNode draggingNode = null;
+        [NonSerialized] private Vector2 draggingOffset;
+        [NonSerialized] private DialogueNode creatingNode = null;
 
         private void OnEnable()
         {
@@ -67,6 +68,13 @@ namespace RPG.Dialogue.Editor
                     DrawBezierConnection(node);
                     GUIDrawNode(node);
                 }
+
+                if (creatingNode != null)
+                {
+                    Undo.RecordObject(selectedDialogue,"Edit Dialogue Node");
+                    selectedDialogue.CreateNode(creatingNode);
+                    creatingNode = null;
+                }
             }
         }
 
@@ -90,16 +98,18 @@ namespace RPG.Dialogue.Editor
             GUILayout.BeginArea(node.rect, nodeStyle);
             EditorGUI.BeginChangeCheck();
             EditorGUILayout.LabelField($"Node:", EditorStyles.boldLabel);
-            string newUniqueID = EditorGUILayout.TextField(node.uniqueID);
             string newText = EditorGUILayout.TextField(node.text);
 
             if (EditorGUI.EndChangeCheck())
             {
                 Undo.RecordObject(selectedDialogue, "Edit Dialogue Text");
-                node.uniqueID = newUniqueID;
                 node.text = newText;
             }
 
+            if (GUILayout.Button("+"))
+            {
+                creatingNode = node;
+            }
             GUILayout.EndArea();
         }
 
