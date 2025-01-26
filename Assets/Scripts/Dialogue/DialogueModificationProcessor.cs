@@ -1,5 +1,6 @@
 using RPG.Dialogue;
 using UnityEditor;
+using UnityEngine;
 
 public class DialogueModificationProcessor : AssetPostprocessor
 {
@@ -11,7 +12,9 @@ public class DialogueModificationProcessor : AssetPostprocessor
             Dialogue dialogue = AssetDatabase.LoadAssetAtPath(importedAsset,typeof(Dialogue)) as Dialogue;
 
             if (dialogue != null)
-            dialogue.CreateRootNode();
+            {
+                dialogue.CreateRootNode();
+            }
         }
     }
 }
