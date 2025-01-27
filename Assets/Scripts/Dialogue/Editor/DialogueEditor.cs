@@ -91,14 +91,12 @@ namespace RPG.Dialogue.Editor
                 EditorGUILayout.EndScrollView();
                 if (creatingNode != null)
                 {
-                    Undo.RecordObject(selectedDialogue, "Added Dialogue Node");
                     selectedDialogue.CreateNode(creatingNode);
                     creatingNode = null;
                 }
 
                 if (deletingNode != null)
                 {
-                    Undo.RecordObject(selectedDialogue, "Deleted Dialogue Node");
                     selectedDialogue.DeleteNode(deletingNode);
                     deletingNode = null;
                 }
@@ -107,10 +105,10 @@ namespace RPG.Dialogue.Editor
 
         private void DrawBezierConnection(DialogueNode node)
         {
-            Vector3 startPos = new Vector2(node.rect.xMax, node.rect.center.y);
+            Vector3 startPos = new Vector2(node.GetRect().xMax, node.GetRect().center.y);
             foreach (DialogueNode childNode in selectedDialogue.GetAllChildNodes(node))
             {
-                Vector3 endPos = new Vector2(childNode.rect.xMin, childNode.rect.center.y);
+                Vector3 endPos = new Vector2(childNode.GetRect().xMin, childNode.GetRect().center.y);
 
                 Vector3 controlPointOffset = endPos - startPos;
                 controlPointOffset.y = 0;
@@ -122,16 +120,9 @@ namespace RPG.Dialogue.Editor
 
         private void GUIDrawNode(DialogueNode node)
         {
-            GUILayout.BeginArea(node.rect, nodeStyle);
-            EditorGUI.BeginChangeCheck();
+            GUILayout.BeginArea(node.GetRect(), nodeStyle);
             EditorGUILayout.LabelField($"Node:", EditorStyles.boldLabel);
-            string newText = EditorGUILayout.TextField(node.text);
-
-            if (EditorGUI.EndChangeCheck())
-            {
-                Undo.RecordObject(selectedDialogue, "Edit Dialogue Text");
-                node.text = newText;
-            }
+            node.SetText(EditorGUILayout.TextField(node.GetText()));
 
             DrawGUIButtons(node);
 
@@ -171,12 +162,11 @@ namespace RPG.Dialogue.Editor
                     linkingNode = null;
                 } 
             }
-            else if (linkingNode.children.Contains(node.uniqueID))
+            else if (linkingNode.GetChildren().Contains(node.name))
             {
                 if (GUILayout.Button("Disconnect"))
                 {
-                    Undo.RecordObject(selectedDialogue, "Disconnect Dialogue");
-                    linkingNode.children.Remove(node.uniqueID);
+                    linkingNode.RemoveChild(node.name);
                     linkingNode = null;
                 }
             }
@@ -184,8 +174,7 @@ namespace RPG.Dialogue.Editor
             {
                 if (GUILayout.Button("Connect"))
                 {
-                    Undo.RecordObject(selectedDialogue, "Connect Dialogue");
-                    linkingNode.children.Add(node.uniqueID);
+                    linkingNode.AddChild(node.name);
                     linkingNode = null;
                 } 
             }
@@ -202,20 +191,21 @@ namespace RPG.Dialogue.Editor
                         draggingNode = GetNodeAtPoint(Event.current.mousePosition+scrollPosition);
                         if (draggingNode != null)
                         {
-                            draggingOffset = draggingNode.rect.position - Event.current.mousePosition;
+                            draggingOffset = draggingNode.GetRect().position - Event.current.mousePosition;
+                            Selection.activeObject = draggingNode;
                         }
                         else
                         {
                             draggingWindow = true;
                             draggingWindowOffset = Event.current.mousePosition + scrollPosition;
+                            Selection.activeObject = selectedDialogue;
                         }
                     }
                     break;
                 case EventType.MouseDrag:
                     if (draggingNode != null)
                     {
-                        Undo.RecordObject(selectedDialogue, "Drag Dialogue");
-                        draggingNode.rect.position = Event.current.mousePosition + draggingOffset;
+                        draggingNode.SetPosition(Event.current.mousePosition + draggingOffset);
                         GUI.changed = true;
                         return;
                     }
@@ -238,31 +228,7 @@ namespace RPG.Dialogue.Editor
                     }
                     break;
             }
-            /*if (Event.current.type == EventType.MouseDown && draggingNode == null)
-            {
-                draggingNode = GetNodeAtPoint(Event.current.mousePosition+scrollPosition);
-                if (draggingNode != null)
-                {
-                    draggingOffset = draggingNode.rect.position - Event.current.mousePosition;
-                }
-                else
-                {
-                    draggingWindow = true;
-                    draggingWindowOffset = Event.current.mousePosition + scrollPosition;
-                }
-            }
-
-            if (Event.current.type == EventType.MouseDrag && draggingNode != null)
-            {
-                Undo.RecordObject(selectedDialogue, "Drag Dialogue");
-                draggingNode.rect.position = Event.current.mousePosition + draggingOffset;
-                GUI.changed = true;
-            }
-
-            if (Event.current.type == EventType.MouseUp && draggingNode != null)
-            {
-                draggingNode = null;
-            }*/
+           
         }
 
         private DialogueNode GetNodeAtPoint(Vector2 currentMousePosition)
@@ -270,7 +236,7 @@ namespace RPG.Dialogue.Editor
             DialogueNode currentNode = null;
             foreach (DialogueNode node in selectedDialogue.GetAllNodes())
             {
-                if (node.rect.Contains(currentMousePosition))
+                if (node.GetRect().Contains(currentMousePosition))
                 {
                     currentNode = node;
                 }
