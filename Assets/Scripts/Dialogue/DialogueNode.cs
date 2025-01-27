@@ -13,6 +13,7 @@ namespace RPG.Dialogue
         [SerializeField] private string text;
         [SerializeField] private List<string> children = new();
         [SerializeField] private Rect rect = new Rect(0,0,200,125);
+        [SerializeField] bool isPlayer = false;
 
         public Rect GetRect()
         {
@@ -27,6 +28,10 @@ namespace RPG.Dialogue
         public List<string> GetChildren()
         {
             return children;
+        }
+        public bool IsPlayer()
+        {
+            return isPlayer;
         }
 
 #if UNITY_EDITOR
@@ -61,7 +66,15 @@ namespace RPG.Dialogue
             children.Remove(childID);
             EditorUtility.SetDirty(this);
         }
+
+        public void SetPlayer(bool newIsPlayer)
+        {
+            Undo.RecordObject(this, "Change Speaker");
+            isPlayer = newIsPlayer;
+            EditorUtility.SetDirty(this);
+        }
 #endif
+       
     }
 }
 

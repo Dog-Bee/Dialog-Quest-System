@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace RPG.Dialogue
 {
@@ -11,7 +12,9 @@ namespace RPG.Dialogue
     {
         [SerializeField] private List<DialogueNode> nodes = new();
         Dictionary<string, DialogueNode> nodeLookup = new();
+        [SerializeField] private Vector2 newNodeOffset = new(250, 0);
 
+        private const float yOffset = 150;
 
         private void OnValidate()
         {
@@ -65,7 +68,10 @@ namespace RPG.Dialogue
             newNode.name = Guid.NewGuid().ToString();
             if (parent != null)
             {
+                newNodeOffset.y = yOffset*parent.GetChildren().Count;
                 parent.AddChild(newNode.name);
+                newNode.SetPlayer(!parent.IsPlayer());
+                newNode.SetPosition(parent.GetRect().position + newNodeOffset);
             }
             
             return newNode;

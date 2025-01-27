@@ -13,13 +13,14 @@ namespace RPG.Dialogue.Editor
     {
         [NonSerialized] private Dialogue selectedDialogue = null;
         [NonSerialized] private GUIStyle nodeStyle;
+        [NonSerialized] private GUIStyle playerNodeStyle;
         [NonSerialized] private DialogueNode draggingNode = null;
         [NonSerialized] private Vector2 draggingOffset;
 
         [NonSerialized] private DialogueNode creatingNode = null;
         [NonSerialized] private DialogueNode deletingNode = null;
         [NonSerialized] private DialogueNode linkingNode = null;
-        
+
         [NonSerialized] private Vector2 scrollPosition;
         [NonSerialized] private bool draggingWindow = false;
         [NonSerialized] private Vector2 draggingWindowOffset;
@@ -40,6 +41,11 @@ namespace RPG.Dialogue.Editor
             nodeStyle.normal.background = EditorGUIUtility.Load("node0") as Texture2D;
             nodeStyle.padding = new RectOffset(20, 20, 20, 20);
             nodeStyle.border = new RectOffset(12, 12, 12, 12);
+
+            playerNodeStyle = new GUIStyle();
+            playerNodeStyle.normal.background = EditorGUIUtility.Load("node1") as Texture2D;
+            playerNodeStyle.padding = new RectOffset(20, 20, 20, 20);
+            playerNodeStyle.border = new RectOffset(12, 12, 12, 12);
         }
 
         [MenuItem("Window/Dialogue Editor")]
@@ -81,13 +87,14 @@ namespace RPG.Dialogue.Editor
 
                 Rect window = GUILayoutUtility.GetRect(windowSize, windowSize);
                 Texture2D graphTexture = Resources.Load("Editor/graph") as Texture2D;
-                Rect textureCoordinates = new Rect(0, 0, windowSize/graphSize, windowSize/graphSize);
-                GUI.DrawTextureWithTexCoords(window,graphTexture,textureCoordinates);
+                Rect textureCoordinates = new Rect(0, 0, windowSize / graphSize, windowSize / graphSize);
+                GUI.DrawTextureWithTexCoords(window, graphTexture, textureCoordinates);
                 foreach (DialogueNode node in selectedDialogue.GetAllNodes())
                 {
                     DrawBezierConnection(node);
                     GUIDrawNode(node);
                 }
+
                 EditorGUILayout.EndScrollView();
                 if (creatingNode != null)
                 {
@@ -120,7 +127,8 @@ namespace RPG.Dialogue.Editor
 
         private void GUIDrawNode(DialogueNode node)
         {
-            GUILayout.BeginArea(node.GetRect(), nodeStyle);
+            GUIStyle style = node.IsPlayer()? playerNodeStyle : nodeStyle;
+            GUILayout.BeginArea(node.GetRect(), style);
             EditorGUILayout.LabelField($"Node:", EditorStyles.boldLabel);
             node.SetText(EditorGUILayout.TextField(node.GetText()));
 
@@ -160,7 +168,7 @@ namespace RPG.Dialogue.Editor
                 if (GUILayout.Button("Cancel"))
                 {
                     linkingNode = null;
-                } 
+                }
             }
             else if (linkingNode.GetChildren().Contains(node.name))
             {
@@ -176,19 +184,18 @@ namespace RPG.Dialogue.Editor
                 {
                     linkingNode.AddChild(node.name);
                     linkingNode = null;
-                } 
+                }
             }
         }
 
         private void DraggingNode()
         {
-
             switch (Event.current.type)
             {
                 case EventType.MouseDown:
                     if (draggingNode == null)
                     {
-                        draggingNode = GetNodeAtPoint(Event.current.mousePosition+scrollPosition);
+                        draggingNode = GetNodeAtPoint(Event.current.mousePosition + scrollPosition);
                         if (draggingNode != null)
                         {
                             draggingOffset = draggingNode.GetRect().position - Event.current.mousePosition;
@@ -201,6 +208,7 @@ namespace RPG.Dialogue.Editor
                             Selection.activeObject = selectedDialogue;
                         }
                     }
+
                     break;
                 case EventType.MouseDrag:
                     if (draggingNode != null)
@@ -215,6 +223,7 @@ namespace RPG.Dialogue.Editor
                         scrollPosition = draggingWindowOffset - Event.current.mousePosition;
                         GUI.changed = true;
                     }
+
                     break;
                 case EventType.MouseUp:
                     if (draggingNode != null)
@@ -226,9 +235,9 @@ namespace RPG.Dialogue.Editor
                     {
                         draggingWindow = false;
                     }
+
                     break;
             }
-           
         }
 
         private DialogueNode GetNodeAtPoint(Vector2 currentMousePosition)
