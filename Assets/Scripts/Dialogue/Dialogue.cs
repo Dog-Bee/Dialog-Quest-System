@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.VisualScripting;
+using Unity.VisualScripting.Antlr3.Runtime;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -10,7 +12,7 @@ namespace RPG.Dialogue
     [CreateAssetMenu(fileName = "New Dialogue", menuName = "DialogueSystem/Dialogue")]
     public class Dialogue : ScriptableObject, ISerializationCallbackReceiver
     {
-        [SerializeField] private List<DialogueNode> nodes = new();
+        [SerializeField] private List<DialogueNode> nodes= new();
         Dictionary<string, DialogueNode> nodeLookup = new();
         [SerializeField] private Vector2 newNodeOffset = new(250, 0);
 
@@ -25,6 +27,10 @@ namespace RPG.Dialogue
             }
         }
 
+        public DialogueNode GetRootNode()
+        {
+            return nodes[0];
+        }
 
         public IEnumerable<DialogueNode> GetAllNodes()
         {
