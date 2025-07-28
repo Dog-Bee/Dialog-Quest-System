@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace RPG.Dialogue
@@ -8,14 +10,33 @@ namespace RPG.Dialogue
     {
         [SerializeField] Dialogue currentDialogue;
 
+        private DialogueNode _currentNode = null;
+
+        private void Awake()
+        {
+            _currentNode = currentDialogue.GetRootNode();
+        }
+
         public string GetText()
         {
-            if (currentDialogue == null)
+            if (_currentNode == null)
             {
                 return "";
             }
 
-            return currentDialogue.GetRootNode().GetText();
+            return _currentNode.GetText();
+        }
+
+        public void GetNext()
+        {
+           DialogueNode[] nodeArray= currentDialogue.GetAllChildNodes(_currentNode).ToArray();
+           _currentNode = nodeArray[0];
+        }
+
+        public bool HasNext()
+        {
+            
+            return true;
         }
     }
 }

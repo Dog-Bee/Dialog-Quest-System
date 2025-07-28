@@ -1,7 +1,7 @@
 using UnityEngine;
 using RPG.Dialogue;
 using TMPro;
-using UnityEngine.Serialization;
+using UnityEngine.UI;
 
 namespace RPG.UI
 {
@@ -9,19 +9,33 @@ namespace RPG.UI
     {
 
        [SerializeField] private TextMeshProUGUI dialogueText;
+       [SerializeField] private Button nextButton;
        private PlayerConversant _playerConversant;
         
         void Start()
         {
+            ButtonsInitialize();
            _playerConversant = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerConversant>();
-           dialogueText.text = _playerConversant.GetText();
+           UpdateUI();
         }
 
-        // Update is called once per frame
-        void Update()
+
+        private void ButtonsInitialize()
         {
-        
+            nextButton.onClick.AddListener(Next);
         }
+
+        private void Next()
+        {
+           _playerConversant.GetNext();
+           UpdateUI();
+        }
+
+        private void UpdateUI()
+        {
+            dialogueText.text = _playerConversant.GetText();
+        }
+
     }
 }
 
